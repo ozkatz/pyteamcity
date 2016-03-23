@@ -358,14 +358,15 @@ class TeamCity:
     def trigger_build(
             self,
             build_type_id, branch=None,
-            comment=None, parameters=None, agent_id=None):
+            comment=None, parameters=None, agent_id=None,
+            artifact_dependencies=None):
         """
         Trigger a new build
         """
         url = _build_url('buildQueue', base_url=self.base_url)
         data = self._get_build_node(
             build_type_id, branch,
-            comment, parameters, agent_id)
+            comment, parameters, agent_id, artifact_dependencies)
 
         response = self._post(
             url,
@@ -379,7 +380,8 @@ class TeamCity:
     def _get_build_node(
             self,
             build_type_id, branch=None,
-            comment=None, parameters=None, agent_id=None):
+            comment=None, parameters=None, agent_id=None,
+            artifact_dependencies=None):
         build_attributes = ''
 
         if branch:
@@ -405,6 +407,17 @@ class TeamCity:
                 for name, value in parameters.items()])
             data += '    </properties>\n'
 
+        if artifact_dependencies:
+            data += '<custom-artifact-dependencies>\n'
+            for dep in artifact_dependencies:
+                data += ' <artifact-dependency type="artifact_dependency">\n'
+                data += '  <properties>\n'
+                for prop_k, prop_v in dep.items():
+                    data += '    <property name="%s" value="%s"/>\n' % (
+                        prop_k, prop_v)
+                data += '  </properties>\n'
+                data += ' </artifact-dependency>\n'
+            data += '</custom-artifact-dependencies>\n'
         data += '</build>\n'
 
         return data
