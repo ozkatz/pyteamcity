@@ -357,14 +357,15 @@ class TeamCity:
             self,
             build_type_id, branch=None,
             comment=None, parameters=None, agent_id=None,
-            artifact_dependencies=None):
+            artifact_dependencies=None, snapshot_dependencies=None):
         """
         Trigger a new build
         """
         url = _build_url('buildQueue', base_url=self.base_url)
         data = self._get_build_node(
             build_type_id, branch,
-            comment, parameters, agent_id, artifact_dependencies)
+            comment, parameters, agent_id, artifact_dependencies,
+            snapshot_dependencies)
 
         response = self._post(
             url,
@@ -379,7 +380,7 @@ class TeamCity:
             self,
             build_type_id, branch=None,
             comment=None, parameters=None, agent_id=None,
-            artifact_dependencies=None):
+            artifact_dependencies=None, snapshot_dependencies=None):
         build_attributes = ''
 
         if branch:
@@ -411,6 +412,12 @@ class TeamCity:
                 dep_data = ['%s="%s"' % (k,v) for k,v in dep.items()]
                 data += '  <build %s/>\n' % (' '.join(dep_data))
             data += '</artifact-dependencies>\n'
+        if snapshot_dependencies:
+            data += '<snapshot-dependencies>\n'
+            for dep in snapshot_dependencies:
+                dep_data = ['%s="%s"' % (k,v) for k,v in dep.items()]
+                data += '  <build %s/>\n' % (' '.join(dep_data))
+            data += '</snapshot-dependencies>\n'
         data += '</build>\n'
 
         return data
