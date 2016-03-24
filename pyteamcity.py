@@ -408,16 +408,11 @@ class TeamCity:
             data += '    </properties>\n'
 
         if artifact_dependencies:
-            data += '<custom-artifact-dependencies>\n'
+            data += '<artifact-dependencies>\n'
             for dep in artifact_dependencies:
-                data += ' <artifact-dependency type="artifact_dependency">\n'
-                data += '  <properties>\n'
-                for prop_k, prop_v in dep.items():
-                    data += '    <property name="%s" value="%s"/>\n' % (
-                        prop_k, prop_v)
-                data += '  </properties>\n'
-                data += ' </artifact-dependency>\n'
-            data += '</custom-artifact-dependencies>\n'
+                dep_data = ['%s="%s"' % (k,v) for k,v in dep.items()]
+                data += '  <build %s/>\n' % (' '.join(dep_data))
+            data += '</artifact-dependencies>\n'
         data += '</build>\n'
 
         return data
